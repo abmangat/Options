@@ -3,14 +3,16 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, time as dt_time, timedelta
+from pathlib import Path
 import time as time_module
 from typing import List, Sequence
 
 from zoneinfo import ZoneInfo
 
 from .config import load_config
-from .reporting import summarize_results
-from .strategy import StrategyEngine, StrategyParameters
+from .reporting import export_results_to_excel, summarize_results
+from .strategy import StrategyEngine, StrategyParameters, StrategyResult
+
 
 
 DEFAULT_TICKERS = ["AAPL", "MSFT", "GOOGL", "META"]
@@ -40,6 +42,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-days", type=int, default=None)
     parser.add_argument("--expiry-step", type=int, default=30)
     parser.add_argument("--top", type=int, default=3, help="Number of top results to print in automatic mode")
+    parser.add_argument(
+        "--output-dir",
+        default="reports",
+        help="Directory where Excel reports will be saved.",
+    )
     parser.add_argument(
         "--schedule-time",
         type=_parse_daily_time,
@@ -85,6 +92,8 @@ def _run_once(
     params: StrategyParameters,
     mode: str,
     top: int,
+) -> List[StrategyResult]:
+    collected: List[StrategyResult] = []
 ) -> None:
     if mode == "manual":
         for ticker in tickers:
@@ -95,17 +104,42 @@ def _run_once(
                 print("No results.")
                 continue
             print(summarize_results(results))
+            collected.extend(results)
     else:
         results = []
         for ticker in tickers:
             best = engine.best_result(ticker, params)
             if best:
                 results.append(best)
+        collected.extend(results)
         if not results:
             print("No qualifying trades found.")
         for result in results[:top]:
             print(summarize_results([result]))
 
+    return collected
+
+
+def _export_report(
+    results: Sequence[StrategyResult],
+    tickers: Sequence[str],
+    mode: str,
+    output_dir: str,
+    run_time: datetime,
+) -> Path:
+    if not tickers:
+        query = "(no tickers)"
+    else:
+        query = ", ".join(tickers)
+    mode_label = "Manual" if mode == "manual" else "Automatic"
+    query_label = f"{query} [{mode_label}]"
+
+    directory = Path(output_dir)
+    directory.mkdir(parents=True, exist_ok=True)
+    filename = f"options_{run_time.strftime('%Y%m%d_%H%M%S')}.xlsx"
+    path = directory / filename
+    export_results_to_excel(results, query_label, run_time, path)
+    return path
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
@@ -167,6 +201,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 return 0
 
             try:
+                run_time = datetime.now(tz)
+                results = _run_once(engine, tickers, params, args.mode, args.top)
+                report_path = _export_report(results, tickers, args.mode, args.output_dir, run_time)
+                print(f"Excel report saved to {report_path}")
+
                 _run_once(engine, tickers, params, args.mode, args.top)
             except KeyboardInterrupt:
                 print("Scheduler interrupted during execution.")
@@ -174,6 +213,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             except Exception as exc:  # pragma: no cover - defensive logging
                 print(f"Scheduled run failed: {exc}")
     else:
+        run_time = datetime.now()
+        results = _run_once(engine, tickers, params, args.mode, args.top)
+        report_path = _export_report(results, tickers, args.mode, args.output_dir, run_time)
+        print(f"Excel report saved to {report_path}")
+
         _run_once(engine, tickers, params, args.mode, args.top)
 
     return 0

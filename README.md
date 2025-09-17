@@ -15,6 +15,7 @@ An automated toolkit for evaluating a synthetic long underlying strategy (buy 1 
   - Implied volatility derived from the quoted contracts (with configurable bounds)
 - Automatic mode surfaces the best trade per ticker while manual mode prints all qualifying expiries
 - Optional daily scheduler to run scans at a specific local time (4:30 pm GST by default)
+- Automatically export each run to a timestamped Excel workbook with query metadata and leg-level details
 - Configurable via CLI flags or YAML configuration file
 
 ## Installation
@@ -59,6 +60,12 @@ Limit output to the top N opportunities (automatic mode):
 ```bash
 python -m options_trader --tickers AAPL MSFT NVDA --top 5
 ```
+
+### Excel reports
+
+Every execution saves a structured workbook in the `reports/` directory (override with `--output-dir`).
+The summary sheet lists the query, date, time, and the top-level metrics per ticker while each result
+gets its own tab inspired by the provided layout (individual legs, premiums, and capital metrics).
 
 ### Customising parameters
 
