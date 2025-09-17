@@ -8,6 +8,13 @@ from typing import Iterable, List, Sequence
 from .strategy import StrategyResult
 from .xlsx import Cell, WorkbookBuilder
 
+"""Human readable reporting helpers."""
+from __future__ import annotations
+
+from typing import Iterable, List
+
+from .strategy import StrategyResult
+
 
 def format_currency(value: float) -> str:
     return f"${value:,.2f}"

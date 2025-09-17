@@ -14,6 +14,7 @@ from .reporting import export_results_to_excel, summarize_results
 from .strategy import StrategyEngine, StrategyParameters, StrategyResult
 
 
+
 DEFAULT_TICKERS = ["AAPL", "MSFT", "GOOGL", "META"]
 
 
@@ -93,6 +94,7 @@ def _run_once(
     top: int,
 ) -> List[StrategyResult]:
     collected: List[StrategyResult] = []
+) -> None:
     if mode == "manual":
         for ticker in tickers:
             results = engine.evaluate(ticker, params)
@@ -138,7 +140,6 @@ def _export_report(
     path = directory / filename
     export_results_to_excel(results, query_label, run_time, path)
     return path
-
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
@@ -204,6 +205,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 results = _run_once(engine, tickers, params, args.mode, args.top)
                 report_path = _export_report(results, tickers, args.mode, args.output_dir, run_time)
                 print(f"Excel report saved to {report_path}")
+
+                _run_once(engine, tickers, params, args.mode, args.top)
             except KeyboardInterrupt:
                 print("Scheduler interrupted during execution.")
                 return 0
@@ -214,6 +217,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         results = _run_once(engine, tickers, params, args.mode, args.top)
         report_path = _export_report(results, tickers, args.mode, args.output_dir, run_time)
         print(f"Excel report saved to {report_path}")
+
+        _run_once(engine, tickers, params, args.mode, args.top)
 
     return 0
 

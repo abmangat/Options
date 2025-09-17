@@ -9,9 +9,9 @@ description = "Automated synthetic long option strategy evaluator"
 readme = "README.md"
 authors = [{name = "Option Automation"}]
 requires-python = ">=3.10"
-dependencies = [
-    "yfinance>=0.2.31",
-]
+
+dependencies = ["yfinance>=0.2.31"]
+
 
 [project.scripts]
 options-trader = "options_trader.cli:main"
