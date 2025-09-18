@@ -5,14 +5,13 @@ import argparse
 from datetime import datetime, time as dt_time, timedelta
 from pathlib import Path
 import time as time_module
+from typing import List, Optional, Sequence
 from typing import List, Sequence
-
 from zoneinfo import ZoneInfo
 
 from .config import load_config
 from .reporting import export_results_to_excel, summarize_results
 from .strategy import StrategyEngine, StrategyParameters, StrategyResult
-
 
 
 DEFAULT_TICKERS = ["AAPL", "MSFT", "GOOGL", "META"]
@@ -141,6 +140,9 @@ def _export_report(
     export_results_to_excel(results, query_label, run_time, path)
     return path
 
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -217,6 +219,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         results = _run_once(engine, tickers, params, args.mode, args.top)
         report_path = _export_report(results, tickers, args.mode, args.output_dir, run_time)
         print(f"Excel report saved to {report_path}")
+
 
         _run_once(engine, tickers, params, args.mode, args.top)
 

@@ -23,6 +23,17 @@ An automated toolkit for evaluating a synthetic long underlying strategy (buy 1 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
+pip install -e ".[full]"
+```
+
+> **Tip:** When using shells such as `zsh` (the macOS default) make sure to quote
+> the extras specifier (`".[full]"`) so the brackets are not interpreted as a
+> glob. Use `pip install -e .` if you prefer installing only the core
+> dependencies.
+
+Python 3.9 or newer is required (the scheduler relies on the standard library
+`zoneinfo` module introduced in 3.9).
+
 pip install -e .[full]
 ```
 

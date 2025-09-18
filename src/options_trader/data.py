@@ -4,6 +4,10 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from typing import Dict, Iterable, List, Optional, Sequence, Union
+
+
+def _clean_number(value: Optional[Union[float, int]]) -> Optional[float]:
 from typing import Iterable, List, Sequence
 
 
@@ -44,6 +48,13 @@ class OptionQuote:
     expiry: datetime
     strike: float
     option_type: str
+    bid: Optional[float]
+    ask: Optional[float]
+    last_price: Optional[float]
+    implied_volatility: Optional[float]
+
+    @property
+    def mid_price(self) -> Optional[float]:
     bid: float | None
     ask: float | None
     last_price: float | None
@@ -124,6 +135,8 @@ class OptionChainClient:
     """Access to Yahoo Finance option chains."""
 
     def __init__(self) -> None:
+        self._ticker_cache: Dict[str, object] = {}
+
         self._ticker_cache: dict[str, object] = {}
 
     def _load_ticker(self, ticker: str):
@@ -171,6 +184,8 @@ class OptionChainClient:
             )
             quotes.append(quote)
         return quotes
+
+    def fetch_chain(self, ticker: str, expiry: Union[datetime, str]) -> OptionChainSlice:
 
     def fetch_chain(self, ticker: str, expiry: datetime | str) -> OptionChainSlice:
         yf_ticker = self._load_ticker(ticker)

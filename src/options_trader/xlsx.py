@@ -4,12 +4,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 from typing import List, Sequence
 from zipfile import ZIP_DEFLATED, ZipFile
 
 
 @dataclass
 class Cell:
+    value: Optional[object]
+
     value: object | None
     style: str = "text"
 
@@ -18,6 +21,10 @@ class Sheet:
     def __init__(self, title: str) -> None:
         self.title = title
         self.rows: List[List[Cell]] = []
+        self.column_widths: Dict[int, float] = {}
+
+    def append(self, row: Sequence[Union[Cell, Tuple[object, str], object]]) -> None:
+
         self.column_widths: dict[int, float] = {}
 
     def append(self, row: Sequence[Cell | tuple | object]) -> None:
@@ -35,6 +42,7 @@ class Sheet:
         for index, width in enumerate(widths, start=1):
             self.column_widths[index] = width
 
+    def computed_widths(self) -> Dict[int, float]:
     def computed_widths(self) -> dict[int, float]:
         widths = dict(self.column_widths)
         for row in self.rows:

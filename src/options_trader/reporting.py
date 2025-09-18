@@ -3,10 +3,13 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
+from typing import Iterable, List, Optional, Sequence
+
 from typing import Iterable, List, Sequence
 
 from .strategy import StrategyResult
 from .xlsx import Cell, WorkbookBuilder
+
 
 """Human readable reporting helpers."""
 from __future__ import annotations
@@ -24,12 +27,14 @@ def format_percentage(value: float) -> str:
     return f"{value * 100:.2f}%"
 
 
+def format_optional_currency(value: Optional[float]) -> str:
 def format_optional_currency(value: float | None) -> str:
     if value is None:
         return "N/A"
     return format_currency(value)
 
 
+def format_optional_percentage(value: Optional[float]) -> str:
 def format_optional_percentage(value: float | None) -> str:
     if value is None:
         return "N/A"
