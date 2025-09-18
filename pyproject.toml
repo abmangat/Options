@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "options-trader"
+version = "0.1.0"
+description = "Automated synthetic long option strategy evaluator"
+readme = "README.md"
+authors = [
+    { name = "Option Automation" }
+]
+requires-python = ">=3.9"
+dependencies = [
+    "yfinance>=0.2.31",
+    "numpy>=1.23",
+    "pandas>=1.5"
+]
+
+[project.scripts]
+"options-trader" = "options_trader.cli:main"
+
+[project.optional-dependencies]
+config = [
+    "pyyaml>=6.0"
+]
+full = [
+    "pyyaml>=6.0",
+    "openpyxl>=3.1",
+    "numpy>=1.23",
+    "pandas>=1.5"
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
