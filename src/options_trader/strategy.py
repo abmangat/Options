@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Sequence, Tuple
 
+from typing import List, Sequence
+
 from .config import StrategyConfig
 from .data import MarketDataClient, OptionChainClient, OptionQuote
 from .notifications import ConsoleNotifier, Notifier
@@ -44,6 +46,7 @@ class StrategyResult:
     net_premium: float
     annualized_yield: float
     implied_volatility: Optional[float]
+    implied_volatility: float | None
     spot_price: float
     breakeven_price: float
     effective_entry_price: float
@@ -96,6 +99,36 @@ class StrategyResult:
 
     @property
     def put_mid(self) -> Optional[float]:
+
+    def call_bid(self) -> float | None:
+        return self.call_quote.bid
+
+    @property
+    def call_ask(self) -> float | None:
+        return self.call_quote.ask
+
+    @property
+    def call_last(self) -> float | None:
+        return self.call_quote.last_price
+
+    @property
+    def call_mid(self) -> float | None:
+        return self.call_quote.mid_price
+
+    @property
+    def put_bid(self) -> float | None:
+        return self.put_quote.bid
+
+    @property
+    def put_ask(self) -> float | None:
+        return self.put_quote.ask
+
+    @property
+    def put_last(self) -> float | None:
+        return self.put_quote.last_price
+
+    @property
+    def put_mid(self) -> float | None:
         return self.put_quote.mid_price
 
 
@@ -106,6 +139,10 @@ class StrategyEngine:
         option_client: Optional[OptionChainClient] = None,
         notifier: Optional[Notifier] = None,
         parameters: Optional[StrategyParameters] = None,
+        data_client: MarketDataClient | None = None,
+        option_client: OptionChainClient | None = None,
+        notifier: Notifier | None = None,
+        parameters: StrategyParameters | None = None,
     ) -> None:
         self.data_client = data_client or MarketDataClient()
         self.option_client = option_client or OptionChainClient()
@@ -113,6 +150,8 @@ class StrategyEngine:
         self.parameters = parameters or StrategyParameters()
 
     def _select_quote(self, quotes: Sequence[OptionQuote], target_strike: float) -> Optional[OptionQuote]:
+
+    def _select_quote(self, quotes: Sequence[OptionQuote], target_strike: float) -> OptionQuote | None:
         if not quotes:
             return None
         ordered = sorted(quotes, key=lambda q: (abs(q.strike - target_strike), q.strike))
@@ -122,6 +161,8 @@ class StrategyEngine:
         return None
 
     def evaluate(self, ticker: str, parameters: Optional[StrategyParameters] = None) -> List[StrategyResult]:
+
+    def evaluate(self, ticker: str, parameters: StrategyParameters | None = None) -> List[StrategyResult]:
         params = parameters or self.parameters
         market_data = self.data_client.fetch(ticker)
         valuation_time = market_data.valuation_date
@@ -130,6 +171,8 @@ class StrategyEngine:
 
         filtered_expiries: List[Tuple[datetime, int]] = []
         last_selected_days: Optional[int] = None
+        filtered_expiries: List[tuple[datetime, int]] = []
+        last_selected_days: int | None = None
         for expiry in expiries:
             delta_seconds = (expiry - valuation_time).total_seconds()
             days = max(0, math.ceil(delta_seconds / 86400))
@@ -231,6 +274,12 @@ class StrategyEngine:
         return evaluated[0] if evaluated else None
 
     def run(self, config: Optional[StrategyConfig] = None) -> List[StrategyResult]:
+
+    def best_result(self, ticker: str, parameters: StrategyParameters | None = None) -> StrategyResult | None:
+        evaluated = self.evaluate(ticker, parameters)
+        return evaluated[0] if evaluated else None
+
+    def run(self, config: StrategyConfig | None = None) -> List[StrategyResult]:
         if config is None:
             tickers = ["AAPL", "MSFT", "GOOGL", "META"]
             params = self.parameters

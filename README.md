@@ -34,6 +34,9 @@ pip install -e ".[full]"
 Python 3.9 or newer is required (the scheduler relies on the standard library
 `zoneinfo` module introduced in 3.9).
 
+pip install -e .[full]
+```
+
 This project relies on third-party packages for data access and configuration parsing:
 
 - [`yfinance`](https://github.com/ranaroussi/yfinance) (pulls market data; installs `pandas`/`numpy`)

@@ -8,6 +8,10 @@ from typing import Dict, Iterable, List, Optional, Sequence, Union
 
 
 def _clean_number(value: Optional[Union[float, int]]) -> Optional[float]:
+from typing import Iterable, List, Sequence
+
+
+def _clean_number(value: float | int | None) -> float | None:
     """Normalise numbers from pandas/numpy into Python floats."""
 
     if value is None:
@@ -51,6 +55,13 @@ class OptionQuote:
 
     @property
     def mid_price(self) -> Optional[float]:
+    bid: float | None
+    ask: float | None
+    last_price: float | None
+    implied_volatility: float | None
+
+    @property
+    def mid_price(self) -> float | None:
         if self.bid is None or self.ask is None:
             return None
         if self.bid <= 0 or self.ask <= 0:
@@ -126,6 +137,8 @@ class OptionChainClient:
     def __init__(self) -> None:
         self._ticker_cache: Dict[str, object] = {}
 
+        self._ticker_cache: dict[str, object] = {}
+
     def _load_ticker(self, ticker: str):
         try:
             import yfinance as yf
@@ -173,6 +186,8 @@ class OptionChainClient:
         return quotes
 
     def fetch_chain(self, ticker: str, expiry: Union[datetime, str]) -> OptionChainSlice:
+
+    def fetch_chain(self, ticker: str, expiry: datetime | str) -> OptionChainSlice:
         yf_ticker = self._load_ticker(ticker)
         if isinstance(expiry, datetime):
             expiry_dt = expiry

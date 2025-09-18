@@ -6,7 +6,7 @@ from datetime import datetime, time as dt_time, timedelta
 from pathlib import Path
 import time as time_module
 from typing import List, Optional, Sequence
-
+from typing import List, Sequence
 from zoneinfo import ZoneInfo
 
 from .config import load_config
@@ -93,6 +93,7 @@ def _run_once(
     top: int,
 ) -> List[StrategyResult]:
     collected: List[StrategyResult] = []
+) -> None:
     if mode == "manual":
         for ticker in tickers:
             results = engine.evaluate(ticker, params)
@@ -141,6 +142,8 @@ def _export_report(
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
+
+def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
@@ -204,6 +207,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 results = _run_once(engine, tickers, params, args.mode, args.top)
                 report_path = _export_report(results, tickers, args.mode, args.output_dir, run_time)
                 print(f"Excel report saved to {report_path}")
+
+                _run_once(engine, tickers, params, args.mode, args.top)
             except KeyboardInterrupt:
                 print("Scheduler interrupted during execution.")
                 return 0
@@ -214,6 +219,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         results = _run_once(engine, tickers, params, args.mode, args.top)
         report_path = _export_report(results, tickers, args.mode, args.output_dir, run_time)
         print(f"Excel report saved to {report_path}")
+
+
+        _run_once(engine, tickers, params, args.mode, args.top)
 
     return 0
 

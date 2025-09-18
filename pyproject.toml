@@ -12,6 +12,9 @@ requires-python = ">=3.9"
 dependencies = [
     "yfinance>=0.2.31",
 ]
+requires-python = ">=3.10"
+
+dependencies = ["yfinance>=0.2.31"]
 
 [project.scripts]
 options-trader = "options_trader.cli:main"
